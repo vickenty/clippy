@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 import re
 from time import strftime, gmtime, localtime
+import locale
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -14,6 +15,8 @@ from gi.repository import Notify
 FORMAT='%Y-%m-%d %H:%M:%S'
 FORMAT_UTC='%s UTC' % FORMAT
 FORMAT_LOC='%s %%Z' % FORMAT
+
+locale.setlocale(locale.LC_ALL, locale.getdefaultlocale())
 
 # Gnome 3 ignores client supplied timeout value and clears non-critical
 # notifications after 4 seconds. That's too quick for me to read.
@@ -62,8 +65,8 @@ class Clippy (object):
             loc_str = strftime(FORMAT_LOC, localtime(tn))
             tz_name = strftime('%Z', localtime(tn))
             text = u'%s\r%s' % (utc_str, loc_str)
-
-            self.current = n = Notification(m.group(1), body=text, icon="preferences-system-time-symbolic")
+            title = locale.format("%d", tn, grouping=True)
+            self.current = n = Notification(title, body=text, icon="preferences-system-time-symbolic")
             
             n.add_action("copy-utc", "Copy UTC", self.copy, utc_str)
             n.add_action("copy-local", "Copy %s" % tz_name, self.copy, loc_str)
